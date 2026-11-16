@@ -78,6 +78,13 @@ p {
   margin: 0;
 }
 
+/* hidden 属性只依赖 UA 样式表里的 [hidden]{display:none}，优先级极低，
+   会被下面 .modal / .empty-state / .contact-grid 的 display:flex|grid 覆盖，
+   导致弹窗与空态“隐藏”失效、一进页面就全部显示。这里用 !important 兜住。 */
+[hidden] {
+  display: none !important;
+}
+
 button {
   font-family: inherit;
   font-size: inherit;
