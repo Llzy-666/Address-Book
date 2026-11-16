@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# 运行时数据：数据库与导出文件不入库，用 python seed.py 重建
+data/*.db
+data/*.db-journal
+data/*.xlsx
+
+# 编辑器
+.vscode/
+.idea/
+.DS_Store
