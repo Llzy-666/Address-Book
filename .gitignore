@@ -13,3 +13,7 @@ data/*.xlsx
 .vscode/
 .idea/
 .DS_Store
+
+# 打包给队友部署用的压缩包，不入库
+*.zip
+

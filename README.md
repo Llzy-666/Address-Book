@@ -1,189 +1,189 @@
-# 通讯录 · Web 版（极限编程作业）
+# Address Book
 
-软件工程（FZU–MU）Extreme Programming 课程作业。一个可用的 Web 通讯录：
-支持**收藏联系人**、**一人多联系方式（一对多）**、**Excel 导入导出**，以及配套的搜索与演示素材。
+A web-based contact manager built for the **Extreme Programming** assignment of the Software Engineering course (FZU–MU).
 
-技术栈刻意保持"零构建"：后端 Flask + 标准库 sqlite3，前端原生 HTML/CSS/JS，打开页面即可用，任何一台装了 Python 的电脑都能跑。
+The app covers four graded capabilities: **favoriting contacts**, **multiple contact methods per person (one-to-many)**, **Excel export**, and **Excel import**. On top of that it offers keyword search, a responsive card layout, and a polished form experience.
+
+This repository is a **two-person collaboration**: Liu Ruizhi built the front end (pages, styling, interaction, demo materials), Zhang Xinyang built the back end (data layer, REST API, Excel processing). Work was split 50/50, developed on separate `feature/*` branches, and integrated through pull requests. See [Team & Division of Labor](#team--division-of-labor).
+
+The stack is deliberately dependency-light: Flask plus the standard-library `sqlite3` on the server, plain HTML/CSS/JavaScript on the client. **No ORM, no build step, no CDN.** Clone it, install three packages, run `python app.py`, and it works — even offline.
 
 ---
 
-## 一、功能清单
+## Features
 
-| 功能 | 说明 |
+| Feature | Description |
 | --- | --- |
-| 联系人增删改查 | 姓名、公司、备注、收藏状态 |
-| 收藏（书签） | 星标即时切换并落库，「只看收藏」筛选 |
-| 多联系方式 | 一个联系人可挂多条，类型含 电话/邮箱/微信/地址/其他，可动态增删行 |
-| 关键词搜索 | 姓名、公司、备注、联系方式值四类字段模糊匹配 |
-| Excel 导出 | 一行一联系人，多联系方式按类型分列；超出槽位用换行拼接，不丢数据 |
-| Excel 导入 | 固定表头校验、空姓名跳过、单事务写入、错误明细回传 |
-| 导入模板 | 一键下载空白模板 |
+| Contact CRUD | Name, company, note, and favorite state for every contact |
+| Favorites (bookmarks) | Star toggles instantly and persists; a "Favorites only" filter shows the shortlist |
+| Multiple contact methods | One contact can hold many methods; types are phone / email / WeChat / address / other. Rows can be added and removed dynamically |
+| Keyword search | Case-insensitive match across name, company, note, and every contact method value |
+| Excel export | One contact per row, methods distributed into typed columns. Overflow beyond the available slots is joined with line breaks in the last column of that type, so **no data is lost** |
+| Excel import | Strict header validation, blank-name rows skipped and reported, single-transaction write with rollback |
+| Import template | One-click download of an empty template with the fixed header |
 
-## 二、技术栈
+## Tech stack
 
-- Python 3.10+（开发环境 3.12.6）
-- Flask（含 flask-cors）
-- SQLite（标准库 `sqlite3`，**不使用 ORM**）
-- openpyxl（Excel 读写）
-- 前端：原生 HTML5 / CSS3 / ES6，**无框架、无构建工具、无外链 CDN**
+| Layer | Choice |
+| --- | --- |
+| Language | Python 3.10+ (developed and tested on 3.12.6) |
+| Web framework | Flask, plus flask-cors for cross-origin access |
+| Database | SQLite through the standard-library `sqlite3` module — **no ORM** |
+| Excel | openpyxl 3.1 |
+| Front end | Native HTML5 / CSS3 / ES6 (fetch), no framework, no bundler, no CDN |
 
-## 三、目录结构
+## Project structure
 
 ```
-极限编程作业/
-├── app.py                  # Flask 入口：注册蓝图、CORS、静态托管、错误兜底
-├── db.py                   # 连接、建表、初始化、清库
-├── seed.py                 # 种子数据（5 个联系人，2 个收藏，4 个多条联系方式）
+.
+├── app.py                  # Flask entry point: blueprints, CORS, static hosting, JSON error handling
+├── db.py                   # Connection, schema creation, initialization, reset
+├── seed.py                 # Demo seed data (5 contacts, 2 favorites, 4 with multiple methods)
 ├── requirements.txt
-├── README.md
-├── .gitignore
 ├── api/
 │   ├── __init__.py
-│   ├── contacts.py         # 联系人 CRUD + 收藏 + 多联系方式
-│   └── excel_io.py         # 导入 / 导出 / 模板
+│   ├── contacts.py         # Contact CRUD, favorites, multi-method handling
+│   └── excel_io.py         # Export, template, import
 ├── utils/
 │   ├── __init__.py
-│   └── excel_schema.py     # 表头常量、行 <-> 对象转换
-├── data/                   # SQLite 文件（运行时生成，不入版本库）
-├── static/                 # 前端
+│   └── excel_schema.py     # Header constants and row <-> object conversion
+├── data/                   # SQLite file lives here at runtime (git-ignored)
+├── static/                 # Front end
 │   ├── index.html
 │   ├── css/style.css
 │   └── js/app.js
-├── templates/              # 预留目录（本作业前端为纯静态，未使用模板渲染）
+├── templates/              # Reserved; the front end is fully static, so nothing is rendered here
 ├── tests/
-│   └── smoke_test.py       # 接口冒烟 + Excel 往返一致性测试
+│   └── smoke_test.py       # API smoke test plus an Excel round-trip check
 └── docs/
-    ├── 演示脚本.md
-    └── deploy.md
+    ├── demo-script.md      # Shot-by-shot recording script
+    ├── deploy.md           # Cloud deployment guide
+    └── screenshots/        # 8 real screenshots taken from the running app
 ```
 
-## 四、快速开始
+## Quick start
 
-### 1. 安装依赖
+### 1. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. 灌入演示数据（可选，但录视频前建议执行）
+### 2. Load the demo data (recommended before recording)
 
 ```bash
 python seed.py
 ```
 
-会清空现有数据并写入 5 个联系人，便于截图与录屏。
+This clears the database and inserts 5 contacts so the screenshots and video look consistent.
 
-### 3. 启动
+### 3. Run
 
 ```bash
 python app.py
 ```
 
-浏览器打开 <http://127.0.0.1:5000/> 即可。
+Open <http://127.0.0.1:5000/>.
 
-> 服务监听 `0.0.0.0:5000`，同一局域网的手机也能访问（`http://你的内网IP:5000/`），方便演示响应式布局。
+The server binds to `0.0.0.0:5000`, so a phone on the same LAN can reach `http://<your-lan-ip>:5000/` — handy for demonstrating the responsive layout.
 
-### 4. 跑接口测试（可选）
+### 4. Run the API tests (optional)
 
-另开一个终端，保持服务运行：
+With the server still running, in a second terminal:
 
 ```bash
 python tests/smoke_test.py
 ```
 
-覆盖 9 个接口，并做一次「导出 → 清空 → 导入 → 比对」的往返验证。
+It exercises all nine endpoints and performs an export → wipe → import → compare round-trip.
 
-## 五、接口文档
+## API reference
 
-统一返回结构：
+Every response uses the same envelope:
 
-- 成功：`{"code": 0, "data": ...}`
-- 失败：`{"code": 非0, "message": "中文错误提示"}`
+- Success: `{"code": 0, "data": ...}`
+- Failure: `{"code": <non-zero>, "message": "<human readable reason>"}`
 
-字段一律 **camelCase**。所有接口已开启 CORS（允许所有来源），前端可直接跨端口调用。
+All field names are **camelCase**. CORS is enabled for every origin so the front end can be served from a different port during development.
 
-### 联系人对象
+### Contact object
 
 ```json
 {
   "id": 1,
-  "name": "张三",
-  "company": "福州某公司",
-  "note": "大学同学",
+  "name": "Zhang San",
+  "company": "Fuzhou Example Tech",
+  "note": "College classmate",
   "isFavorite": true,
   "methods": [
-    {"type": "phone", "label": "手机", "value": "13800000000"},
-    {"type": "email", "label": "工作邮箱", "value": "zhangsan@x.com"}
+    {"type": "phone", "label": "Mobile", "value": "13800000000"},
+    {"type": "email", "label": "Work email", "value": "zhangsan@example.com"}
   ]
 }
 ```
 
-`type` 枚举仅限：`phone` / `email` / `wechat` / `address` / `other`，非法值按 `other` 处理。
-`label` 可为空，为空时后端回落为该类型的默认中文标签（手机 / 邮箱 / 微信 / 地址 / 其他）。
+`type` is restricted to `phone` / `email` / `wechat` / `address` / `other`; anything else is normalized to `other`.
+`label` may be empty — the server falls back to the default Chinese label for that type (手机 / 邮箱 / 微信 / 地址 / 其他).
 
----
-
-### 1) 列表 / 筛选 / 搜索
+### 1. List, filter, search
 
 ```
-GET /api/contacts?favorite=1&keyword=福州
+GET /api/contacts?favorite=1&keyword=fuzhou
 ```
 
-两个参数都可省略。排序规则：收藏优先，其次按更新时间倒序。
+Both query parameters are optional. Ordering is favorites first, then most recently updated.
 
 ```json
-{"code": 0, "data": [ {联系人对象}, {联系人对象} ]}
+{"code": 0, "data": [ {contact object}, {contact object} ]}
 ```
 
-### 2) 详情
+### 2. Get one contact
 
 ```
 GET /api/contacts/1
 ```
 
 ```json
-{"code": 0, "data": {"id": 1, "name": "张三", "methods": [ ... ]}}
+{"code": 0, "data": {"id": 1, "name": "Zhang San", "methods": [ ... ]}}
 ```
 
-不存在时返回 `{"code": 404, "message": "联系人不存在"}`。
+If the contact does not exist: `{"code": 404, "message": "联系人不存在"}`.
 
-### 3) 新增
+### 3. Create
 
 ```
 POST /api/contacts
 Content-Type: application/json
 
 {
-  "name": "李四",
-  "company": "厦门某公司",
-  "note": "前同事",
+  "name": "Li Si",
+  "company": "Xiamen Example Trading",
+  "note": "Former colleague",
   "isFavorite": false,
   "methods": [
-    {"type": "phone", "label": "手机", "value": "13900000001"},
+    {"type": "phone", "label": "Mobile", "value": "13900000001"},
     {"type": "wechat", "label": "", "value": "lisi_wx"}
   ]
 }
 ```
 
-校验规则：`name` 非空且 ≤ 50 字；每条 method 的 `value` 非空且 ≤ 200 字。
-成功返回新建的完整联系人对象（含 `id`）。
+Validation: `name` must be non-empty and at most 50 characters; every method `value` must be non-empty and at most 200 characters. Returns the created contact, including its `id`.
 
-失败示例：
+Failure example:
 
 ```json
 {"code": 1, "message": "姓名不能为空"}
 ```
 
-### 4) 修改（全量）
+### 4. Update (full replacement)
 
 ```
 PUT /api/contacts/1
 ```
 
-请求体同新增。**全量更新语义**：先删除该联系人旧的联系方式，再按请求体重新插入，
-因此前端每次提交都要带上完整的 `methods` 数组。返回更新后的对象。
+Same body shape as create. Semantics are **full replacement**: existing methods are deleted and re-inserted from the request body, so the client must always send the complete `methods` array.
 
-### 5) 删除
+### 5. Delete
 
 ```
 DELETE /api/contacts/1
@@ -193,9 +193,9 @@ DELETE /api/contacts/1
 {"code": 0, "data": {"id": 1}}
 ```
 
-联系方式随外键 `ON DELETE CASCADE` 一并删除。
+Contact methods are removed automatically through the `ON DELETE CASCADE` foreign key.
 
-### 6) 收藏 / 取消收藏
+### 6. Favorite / unfavorite
 
 ```
 POST /api/contacts/1/favorite
@@ -204,166 +204,173 @@ Content-Type: application/json
 {"isFavorite": true}
 ```
 
-返回更新后的联系人对象。
+Returns the updated contact.
 
-### 7) 导出 Excel
+### 7. Export to Excel
 
 ```
 GET /api/export
 ```
 
-直接返回文件下载，响应头：
+Streams a download with:
 
 ```
 Content-Disposition: attachment; filename=contacts_YYYYMMDD.xlsx
 ```
 
-### 8) 下载导入模板
+### 8. Download the import template
 
 ```
 GET /api/export/template
 ```
 
-返回只有表头一行的空白 xlsx。
+An empty workbook containing only the header row.
 
-### 9) 导入 Excel
+### 9. Import from Excel
 
 ```
 POST /api/import
 Content-Type: multipart/form-data
-字段名: file
+field name: file
 ```
-
-成功示例：
 
 ```json
-{
-  "code": 0,
-  "data": {
-    "inserted": 5,
-    "skipped": 0,
-    "errors": []
-  }
-}
+{"code": 0, "data": {"inserted": 5, "skipped": 0, "errors": []}}
 ```
 
-带容错的示例（第 3 行姓名为空）：
+With a row whose name is blank:
 
 ```json
-{
-  "code": 0,
-  "data": {
-    "inserted": 4,
-    "skipped": 1,
-    "errors": ["第3行：姓名不能为空"]
-  }
-}
+{"code": 0, "data": {"inserted": 4, "skipped": 1, "errors": ["第3行：姓名不能为空"]}}
 ```
 
-错误码：
-
-| code | 含义 |
+| code | Meaning |
 | --- | --- |
-| 1001 | 表头不符 / 不是 `.xlsx` / 文件无法解析 |
-| 1002 | 写库失败，整批已回滚 |
+| 1001 | Header mismatch, not an `.xlsx` file, or the file cannot be parsed |
+| 1002 | Database write failed; the whole batch was rolled back |
 
-### 错误兜底
+### Error handling
 
-未匹配的路由、方法不允许、上传超限、服务器异常，全部返回 JSON 的 `code` 结构，
-不会吐 HTML 错误页：
+Unmatched routes, disallowed methods, oversized uploads, and unhandled exceptions all return the same JSON envelope instead of an HTML error page:
 
 ```json
 {"code": 404, "message": "请求的资源不存在"}
 ```
 
-## 六、Excel 格式说明
+## Excel format
 
-### 表头（第一行固定，顺序固定，不可增删）
+### Header (first row, fixed order, no additions or reordering)
 
 ```
 姓名 | 公司 | 备注 | 是否收藏 | 联系人电话1 | 联系人电话2 | 联系人电话3 | 邮箱1 | 邮箱2 | 微信号 | 地址 | 其他
 ```
 
-### 导出规则
+### Export rules
 
-- 一个联系人占一行。
-- 联系方式按类型落到对应列：`phone` → 电话1/2/3，`email` → 邮箱1/2，`wechat` → 微信号，`address` → 地址，`other` → 其他。
-- 同类型数量超出槽位时，多出的值用**换行**拼接到该类型最后一列的同一个单元格里，不会丢数据。
-- `是否收藏` 写「是」/「否」。
-- 样式：首行加粗、冻结首行；列宽设为 姓名 14、公司 20、地址 30 等便于阅读的值。
+- One contact per row.
+- Methods fill typed columns: `phone` → 联系人电话1/2/3, `email` → 邮箱1/2, `wechat` → 微信号, `address` → 地址, `other` → 其他.
+- When a type has more values than slots, the extra values are joined with **line breaks** into the last column of that type. Nothing is discarded.
+- `是否收藏` is written as `是` or `否`.
+- The header row is bold and frozen; column widths are tuned for readability (name 14, company 20, address 30).
 
-### 标签（label）如何处理
+### How the `label` field survives a round-trip
 
-`label` 不占独立列。当 `label` 与类型默认名不同（例如「工作邮箱」）时，该单元格写成
-`标签:值` 的形式，例如：
+`label` does not get its own column. When a label differs from the default for its type — for example "Work email" — the cell is written as `label:value`:
 
 | 邮箱1 |
 | --- |
 | 工作邮箱:zhangsan@example.com |
 
-导入时会识别 `标签:` 前缀并还原成对应的 label，因此**导出后再导入可以 100% 还原**，
-包括自定的标签。`tests/smoke_test.py` 里的「往返一致」断言就是在验证这一点。
+The importer recognizes the `label:` prefix and restores the original label, so **export followed by import reproduces the data exactly, including custom labels**. The round-trip assertion in `tests/smoke_test.py` verifies this.
 
-### 导入规则
+### Import rules
 
-- 必须是 `.xlsx`；表头逐列比对，缺列或顺序不符 → `code=1001`，提示「表头不符合模板，请下载模板后填写」。
-- 姓名为空的行跳过，并记入 `errors`；空单元格直接跳过，不生成对应 method。
-- `是否收藏` 只识别「是」为 true，其余一律 false。
-- 整批写入放在一个事务里，任一行写库失败即回滚并返回 `code=1002`。
-- 导入完成后控制台打印 `[import] inserted=n skipped=m`。
+- The file must be `.xlsx`. The header is compared column by column; a missing column or a different order returns `code=1001`.
+- Rows with a blank name are skipped and listed in `errors`; blank cells are ignored and produce no method.
+- `是否收藏` counts as true only for `是`; anything else is false.
+- The whole batch is written in one transaction; any failure rolls back and returns `code=1002`.
+- The server prints `[import] inserted=n skipped=m` after each import.
 
-### 导出 → 导入的往返示例
-
-```bash
-# 1. 导出
-curl -o contacts.xlsx http://127.0.0.1:5000/api/export
-# 2. 清空后重新导入
-curl -F "file=@contacts.xlsx" http://127.0.0.1:5000/api/import
-# 3. 数据与原库一致（含自定义 label）
-```
-
-## 七、数据库设计
+## Database schema
 
 ```sql
-contacts(
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL,
-  company TEXT,
-  note TEXT,
-  is_favorite INTEGER NOT NULL DEFAULT 0,
-  created_at TEXT,
-  updated_at TEXT
+CREATE TABLE contacts (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    name        TEXT NOT NULL,
+    company     TEXT,
+    note        TEXT,
+    is_favorite INTEGER NOT NULL DEFAULT 0,
+    created_at  TEXT,
+    updated_at  TEXT
 );
 
-contact_methods(
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  contact_id INTEGER NOT NULL,
-  type TEXT NOT NULL,
-  label TEXT,
-  value TEXT NOT NULL,
-  sort_order INTEGER DEFAULT 0,
-  FOREIGN KEY (contact_id) REFERENCES contacts(id) ON DELETE CASCADE
+CREATE TABLE contact_methods (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    contact_id INTEGER NOT NULL,
+    type       TEXT NOT NULL,
+    label      TEXT,
+    value      TEXT NOT NULL,
+    sort_order INTEGER DEFAULT 0,
+    FOREIGN KEY (contact_id) REFERENCES contacts (id) ON DELETE CASCADE
 );
 ```
 
-- 每个连接都执行 `PRAGMA foreign_keys = ON`，保证级联删除生效。
-- `is_favorite` 以 0/1 存储，对外输出为布尔 `isFavorite`。
+`PRAGMA foreign_keys = ON` is executed on every connection so cascade deletes actually fire. `is_favorite` is stored as 0/1 and exposed as the boolean `isFavorite`.
 
-## 八、安全与规范
+## Screenshots
 
-- 所有 SQL 使用参数化占位符，不做字符串拼接。
-- 服务端二次校验姓名长度与联系方式值长度，前端校验只是体验优化。
-- 遵循 PEP8：snake_case 命名、常量全大写、函数短小、每个接口函数带中文 docstring。
-- 前端 `app.js` 分三层：`request()` 统一解包 `code/message`、`render` 渲染、事件绑定；CSS 用变量统一色板并带 BEM 风格类名。
+All screenshots below were captured from the running application.
 
-## 九、常见问题
+| | |
+| --- | --- |
+| ![Contact list](docs/screenshots/01-list.png) | ![Favorites filter](docs/screenshots/03-favorites.png) |
+| Contact list with favorite accent bars | "Favorites only" filter |
+| ![Create drawer](docs/screenshots/02-create-drawer.png) | ![Edit drawer](docs/screenshots/04-edit-drawer.png) |
+| Adding a contact with three method types | Editing an existing contact |
+| ![Excel export](docs/screenshots/05-excel-export.png) | ![Import error](docs/screenshots/06-import-error.png) |
+| Exported workbook opened in Excel | Import rejected for a modified header |
+| ![Import success](docs/screenshots/07-import-success.png) | ![Responsive](docs/screenshots/08-responsive.png) |
+| Import result with skipped rows and error details | Two-column responsive layout |
 
-**Q：`Address already in use` / 5000 端口被占用？**
-Windows 上 5000 端口可能被系统服务占用。改 `app.py` 末尾的 `port=5000` 为 `5001`，
-前端同源访问无需改任何 JS。
+## Tests
 
-**Q：导入报「表头不符合模板」？**
-务必先点「下载模板」，在模板文件里填写，不要自己新建表头或调整列序。
+`tests/smoke_test.py` uses only the standard library and covers:
 
-**Q：数据库想重置？**
-删掉 `data/address_book.db`，或直接跑 `python seed.py`（会清空并重建种子数据）。
+- list, favorite filter, keyword search, detail
+- create, full update, favorite toggle, delete, and 404 after delete
+- validation rejection for an empty name
+- export header and row count
+- template containing only the header
+- export → wipe → import → compare, including custom labels
+- header mismatch returning `1001`
+- blank-name rows being skipped and reported
+
+Expected output: `通过 20 项，失败 0 项`.
+
+## Team & Division of Labor
+
+| Member | GitHub | Responsibility | Contribution |
+| --- | --- | --- | --- |
+| Liu Ruizhi | [@Llzy-666](https://github.com/Llzy-666) | Front end: page structure, CSS design system and responsive layout, all interactions (list, search, favorites, drawer form, import/export panels), demo script and screenshots | 50% |
+| Zhang Xinyang | [@Tribulati0n](https://github.com/Tribulati0n) | Back end: SQLite schema and data layer, all nine REST endpoints, Excel import/export and header validation, seed data and API documentation | 50% |
+
+### How we collaborated
+
+Each member worked on an independent branch — `feature/backend` and `feature/frontend` — and merged into `main` through a pull request. The API contract (paths, field names, response envelope, Excel header) was fixed **before** any code was written, which is why the two halves integrated on the first attempt without adapter code.
+
+Two rules kept the branches from diverging:
+
+1. Neither member edited the other's files. The back end owned `app.py`, `db.py`, `api/`, `utils/`; the front end owned `static/`.
+2. Every endpoint change was validated against `tests/smoke_test.py` before merging, so the contract never silently drifted.
+
+## Documentation
+
+- [`docs/demo-script.md`](docs/demo-script.md) — shot-by-shot recording script for the 2–3 minute demo video
+- [`docs/deploy.md`](docs/deploy.md) — Ubuntu + gunicorn + Nginx deployment guide
+
+## Notes
+
+- All SQL statements use parameterized placeholders; no string concatenation is used to build queries.
+- Name and method-value lengths are validated on the server as well as in the browser.
+- The code follows PEP 8: `snake_case` naming, upper-case constants, small single-purpose functions, and a Chinese docstring on every endpoint.
+- `app.js` is split into three layers — `request()` unwraps the `code`/`message` envelope, `render` builds the DOM, and the event layer wires it up. `style.css` centralizes colors, radii, and spacing in CSS custom properties.
