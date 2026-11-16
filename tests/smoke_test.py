@@ -53,7 +53,7 @@ def http_bytes(path):
 
 def http_upload(path, filename, content):
     """以 multipart/form-data 上传一个文件。"""
-    boundary = "----dshsmokeboundary"
+    boundary = "----SmokeTestBoundary"
     body = (
         "--{}\r\n".format(boundary).encode("utf-8")
         + 'Content-Disposition: form-data; name="file"; filename="{}"\r\n'.format(
