@@ -58,6 +58,7 @@ The stack is deliberately dependency-light: Flask plus the standard-library `sql
 └── docs/
     ├── demo-script.md      # Shot-by-shot recording script
     ├── deploy.md           # Cloud deployment guide
+    ├── code-standards.md   # Coding conventions, Git workflow, file ownership
     └── screenshots/        # 8 real screenshots taken from the running app
 ```
 
@@ -367,6 +368,7 @@ Two rules kept the branches from diverging:
 
 - [`docs/demo-script.md`](docs/demo-script.md) — shot-by-shot recording script for the 2–3 minute demo video
 - [`docs/deploy.md`](docs/deploy.md) — Ubuntu + gunicorn + Nginx deployment guide
+- [`docs/code-standards.md`](docs/code-standards.md) — coding conventions, Git workflow, and file ownership
 
 ## Notes
 
